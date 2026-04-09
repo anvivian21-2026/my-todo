@@ -107,60 +107,49 @@ function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
 function getMonday(d){const date=new Date(d);const day=date.getDay();const diff=day===0?-6:1-day;date.setDate(date.getDate()+diff);date.setHours(0,0,0,0);return date}
 function isPast(s){return s<todayStr()}
 
-// ─── Sync Config ───
-// Try multiple server addresses
-const SYNC_URLS = [
-  'http://192.168.1.192:3456',
-  'http://onpaa-share.fnos.net:3456'
-];
-let activeUrl = null;
+// ─── Supabase Sync ───
+const SB_URL = 'https://eleddpdxdcvxqexjsjop.supabase.co';
+const SB_KEY = 'sb_publishable_CmZyREuiHLG4j7pxD2-brw_Z2H62HUr';
 
 async function syncLoad() {
-  for (const url of SYNC_URLS) {
-    try {
-      const r = await fetch(url + '/tasks', {signal: AbortSignal.timeout(3000)});
-      if (r.ok) {
-        activeUrl = url;
-        const data = await r.json();
-        if (Object.keys(data).length > 0) return data;
-      }
-    } catch(e) {}
-  }
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/tasks?id=eq.all&select=data', {
+      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY},
+      signal: AbortSignal.timeout(5000)
+    });
+    if (r.ok) {
+      const rows = await r.json();
+      if (rows.length > 0 && rows[0].data && Object.keys(rows[0].data).length > 0) return rows[0].data;
+    }
+  } catch(e) {}
   return null;
 }
 
 async function syncSave(data) {
-  if (!activeUrl) return;
   try {
-    await fetch(activeUrl + '/tasks', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
+    await fetch(SB_URL + '/rest/v1/tasks?id=eq.all', {
+      method: 'PATCH',
+      headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'},
+      body: JSON.stringify({ data: data, updated_at: new Date().toISOString() })
     });
   } catch(e) {}
 }
 
 function loadData(){
-  // Load from localStorage first (instant)
   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)allTasks=JSON.parse(raw)}catch(e){}
-  
-  // Then try server sync
   syncLoad().then(serverData => {
     if (serverData) {
-      // Merge: server wins if it has more data
-      const serverCount = Object.values(serverData).flat().length;
-      const localCount = Object.values(allTasks).flat().length;
-      if (serverCount >= localCount) allTasks = serverData;
-    }
-    // carry over
-    carryOver();
-    render();
-    // Show sync status
+      const sc = Object.values(serverData).flat().length;
+      const lc = Object.values(allTasks).flat().length;
+      if (sc >= lc) allTasks = serverData; else syncSave(allTasks);
+    } else if (Object.keys(allTasks).length > 0) { syncSave(allTasks); }
+    carryOver(); render();
     const dot = document.getElementById('sync-dot');
-    if (dot) dot.style.background = activeUrl ? '#4a9c6d' : '#e05252';
+    if (dot) dot.style.background = '#4a9c6d';
+  }).catch(() => {
+    const dot = document.getElementById('sync-dot');
+    if (dot) dot.style.background = '#e05252';
   });
-  
-  // Still do carry over on local data immediately
   carryOver();
 }
 
