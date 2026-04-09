@@ -107,9 +107,64 @@ function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
 function getMonday(d){const date=new Date(d);const day=date.getDay();const diff=day===0?-6:1-day;date.setDate(date.getDate()+diff);date.setHours(0,0,0,0);return date}
 function isPast(s){return s<todayStr()}
 
+// ─── Sync Config ───
+// Try multiple server addresses
+const SYNC_URLS = [
+  'http://192.168.1.192:3456',
+  'http://onpaa-share.fnos.net:3456'
+];
+let activeUrl = null;
+
+async function syncLoad() {
+  for (const url of SYNC_URLS) {
+    try {
+      const r = await fetch(url + '/tasks', {signal: AbortSignal.timeout(3000)});
+      if (r.ok) {
+        activeUrl = url;
+        const data = await r.json();
+        if (Object.keys(data).length > 0) return data;
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
+async function syncSave(data) {
+  if (!activeUrl) return;
+  try {
+    await fetch(activeUrl + '/tasks', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e) {}
+}
+
 function loadData(){
+  // Load from localStorage first (instant)
   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)allTasks=JSON.parse(raw)}catch(e){}
-  // carry over
+  
+  // Then try server sync
+  syncLoad().then(serverData => {
+    if (serverData) {
+      // Merge: server wins if it has more data
+      const serverCount = Object.values(serverData).flat().length;
+      const localCount = Object.values(allTasks).flat().length;
+      if (serverCount >= localCount) allTasks = serverData;
+    }
+    // carry over
+    carryOver();
+    render();
+    // Show sync status
+    const dot = document.getElementById('sync-dot');
+    if (dot) dot.style.background = activeUrl ? '#4a9c6d' : '#e05252';
+  });
+  
+  // Still do carry over on local data immediately
+  carryOver();
+}
+
+function carryOver() {
   const today=todayStr();
   let changed=false;
   for(const[dateStr,tasks]of Object.entries(allTasks)){
@@ -132,8 +187,10 @@ function loadData(){
   }
   if(changed)saveData();
 }
+
 function saveData(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(allTasks))}catch(e){}
+  syncSave(allTasks);
 }
 
 // ─── Render ───
@@ -147,7 +204,10 @@ function render(){
   <div class="header">
     <div class="header-top">
       <span class="app-title">待办</span>
-      <button class="today-chip ${weekOffset!==0?'show':''}" onclick="goToday()">回到本周</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:#999" title="同步状态"></span>
+        <button class="today-chip ${weekOffset!==0?'show':''}" onclick="goToday()">回到本周</button>
+      </div>
     </div>
     <div class="week-nav">
       <button class="nav-arrow" onclick="goWeek(-1)">‹</button>
