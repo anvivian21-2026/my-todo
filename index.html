@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#3a3226">
+<title>每日待办</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;background:#f5f0eb;color:#2d2d2d;overflow-x:hidden}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,#3a3226,#5c4a3a);padding:20px 20px 14px;border-radius:0 0 20px 20px;box-shadow:0 4px 20px rgba(60,45,30,.15)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.app-title{font-size:24px;font-weight:800;color:#fff;letter-spacing:2px}
+.today-chip{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#eee;font-size:12px;border-radius:20px;padding:4px 12px;cursor:pointer;display:none}
+.today-chip.show{display:inline-block}
+.week-nav{display:flex;align-items:center;justify-content:center;gap:20px}
+.nav-arrow{background:rgba(255,255,255,.12);border:none;color:#ddd;font-size:24px;width:36px;height:36px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.week-label{font-size:15px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:1px}
+
+/* Input */
+.input-bar{position:sticky;top:98px;z-index:90;display:flex;gap:8px;padding:12px 16px;background:#f5f0eb}
+.input-bar input{flex:1;padding:11px 16px;border-radius:12px;border:2px solid #e0d6cc;background:#fff;color:#2d2d2d;font-size:15px;outline:none}
+.input-bar input:focus{border-color:#c4956a}
+.input-bar input:disabled{opacity:.5}
+.add-btn{width:44px;height:44px;border-radius:12px;border:none;background:linear-gradient(135deg,#c4956a,#a07850);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(180,130,90,.3);transition:opacity .2s}
+.add-btn svg{pointer-events:none}
+
+/* Day list */
+.day-list{padding:4px 16px 100px;display:flex;flex-direction:column;gap:6px}
+.day-block{border-radius:14px;background:#fff;box-shadow:0 1px 4px rgba(60,45,30,.06);position:relative;z-index:1}
+.day-block.expanded{z-index:10}
+
+.day-row{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;border:none;background:#fff;cursor:pointer;text-align:left;border-radius:14px;transition:background .15s}
+.day-row.today{background:linear-gradient(135deg,#c4956a,#a07850)}
+.day-row.past{background:#fafaf8}
+.day-row.expanded{border-radius:14px 14px 0 0;border-bottom:1px solid #f0ebe5}
+
+.day-left{display:flex;align-items:center;gap:10px}
+.day-name{font-size:16px;font-weight:700;min-width:36px}
+.day-date{font-size:13px;color:#999;font-weight:500}
+.today .day-name{color:#fff}
+.today .day-date{color:rgba(255,255,255,.8)}
+.past:not(.today) .day-name{color:#999}
+.past:not(.today) .day-date{color:#bbb}
+.today-dot{font-size:10px;background:rgba(255,255,255,.3);color:#fff;padding:2px 8px;border-radius:10px;font-weight:700}
+
+.day-right{display:flex;align-items:center;gap:8px}
+.task-count{font-size:11px;background:#f5f0eb;color:#a07850;padding:3px 10px;border-radius:10px;font-weight:600}
+.today .task-count{background:rgba(255,255,255,.25);color:#fff}
+.chevron{font-size:20px;color:#ccc;transition:transform .2s;font-weight:300}
+.today .chevron{color:#fff}
+.expanded .chevron{transform:rotate(90deg)}
+
+/* Tasks */
+.task-list{padding:6px 0}
+.empty-day{padding:20px;text-align:center;color:#c4b5a5;font-size:13px}
+
+.task-row{display:flex;align-items:center;gap:8px;padding:10px 12px 10px 6px;margin:0 8px;border-radius:10px;transition:background .15s,opacity .2s}
+.task-row.done{opacity:.55}
+.task-row.drag-over{background:#f5f0eb}
+
+.drag-handle{color:#d4ccc2;font-size:14px;cursor:grab;user-select:none;padding:0 2px;line-height:1}
+
+.checkbox{width:22px;height:22px;border-radius:7px;border:2px solid #d4ccc2;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;padding:0}
+.checkbox.checked{background:#a07850;border-color:#a07850}
+
+.task-content{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.task-text{font-size:14px;line-height:1.4;word-break:break-word}
+.task-row.done .task-text{text-decoration:line-through;color:#aaa}
+.carried-badge{font-size:11px;color:#c4956a;font-weight:500}
+
+.menu-btn{background:none;border:none;font-size:18px;color:#bbb;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1;position:relative}
+
+/* Menu */
+.menu{position:absolute;right:0;bottom:32px;background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.18);border:1px solid #f0ebe5;min-width:150px;z-index:999;overflow:hidden;display:none}
+.menu.open{display:block}
+.menu-header{padding:8px 14px 4px;font-size:11px;color:#999;font-weight:600}
+.menu-item{display:block;width:100%;padding:10px 14px;border:none;background:none;text-align:left;font-size:13px;color:#2d2d2d;cursor:pointer}
+.menu-item:active{background:#f5f0eb}
+.menu-item.danger{color:#e05252}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ─── Data ───
+const STORAGE_KEY = 'weektodo-data';
+const DAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+let allTasks = {};
+let weekOffset = 0;
+let expandedDay = todayStr();
+let openMenu = null;
+let moveMode = false;
+
+function todayStr(){const d=new Date();return ds(d)}
+function ds(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fmt(s){const d=new Date(s+'T00:00:00');return `${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
+function getMonday(d){const date=new Date(d);const day=date.getDay();const diff=day===0?-6:1-day;date.setDate(date.getDate()+diff);date.setHours(0,0,0,0);return date}
+function isPast(s){return s<todayStr()}
+
+function loadData(){
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)allTasks=JSON.parse(raw)}catch(e){}
+  // carry over
+  const today=todayStr();
+  let changed=false;
+  for(const[dateStr,tasks]of Object.entries(allTasks)){
+    if(dateStr<today){
+      const unfinished=tasks.filter(t=>!t.done);
+      const finished=tasks.filter(t=>t.done);
+      if(unfinished.length>0){
+        const todayTasks=allTasks[today]||[];
+        const existing=new Set(todayTasks.map(t=>t.text));
+        for(const t of unfinished){
+          if(!existing.has(t.text)){
+            todayTasks.push({...t,carriedFrom:t.carriedFrom||dateStr});
+          }
+        }
+        allTasks[today]=todayTasks;
+        allTasks[dateStr]=finished;
+        changed=true;
+      }
+    }
+  }
+  if(changed)saveData();
+}
+function saveData(){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(allTasks))}catch(e){}
+}
+
+// ─── Render ───
+function render(){
+  const monday=getMonday(addDays(new Date(),weekOffset*7));
+  const weekDays=Array.from({length:7},(_,i)=>ds(addDays(monday,i)));
+  const weekLabel=`${fmt(ds(monday))} — ${fmt(ds(addDays(monday,6)))}`;
+  const today=todayStr();
+
+  let html=`
+  <div class="header">
+    <div class="header-top">
+      <span class="app-title">待办</span>
+      <button class="today-chip ${weekOffset!==0?'show':''}" onclick="goToday()">回到本周</button>
+    </div>
+    <div class="week-nav">
+      <button class="nav-arrow" onclick="goWeek(-1)">‹</button>
+      <span class="week-label">${weekLabel}</span>
+      <button class="nav-arrow" onclick="goWeek(1)">›</button>
+    </div>
+  </div>
+  <div class="input-bar">
+    <input id="taskInput" placeholder="${expandedDay?`添加到 ${fmt(expandedDay)} ${DAY_NAMES[new Date(expandedDay+'T00:00:00').getDay()]}...`:'请先展开某一天...'}" ${expandedDay?'':'disabled'} onkeydown="if(event.key==='Enter')addTask()">
+    <button class="add-btn" onclick="addTask()"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="day-list">`;
+
+  for(const dateStr of weekDays){
+    const tasks=allTasks[dateStr]||[];
+    const undone=tasks.filter(t=>!t.done).length;
+    const total=tasks.length;
+    const isExp=expandedDay===dateStr;
+    const isToday=dateStr===today;
+    const past=isPast(dateStr);
+    const d=new Date(dateStr+'T00:00:00');
+    const cls=['day-block'];
+    if(isExp)cls.push('expanded');
+
+    const rowCls=['day-row'];
+    if(isToday)rowCls.push('today');
+    if(past&&!isToday)rowCls.push('past');
+    if(isExp)rowCls.push('expanded');
+
+    let countText='';
+    if(total>0)countText=undone>0?`${undone}项待办`:`${total}项已完成`;
+
+    html+=`<div class="${cls.join(' ')}">
+      <button class="${rowCls.join(' ')}" onclick="toggleDay('${dateStr}')">
+        <div class="day-left">
+          <span class="day-name">${DAY_NAMES[d.getDay()]}</span>
+          <span class="day-date">${fmt(dateStr)}</span>
+          ${isToday?'<span class="today-dot">今天</span>':''}
+        </div>
+        <div class="day-right">
+          ${countText?`<span class="task-count">${countText}</span>`:''}
+          <span class="chevron">›</span>
+        </div>
+      </button>`;
+
+    if(isExp){
+      html+=`<div class="task-list">`;
+      if(tasks.length===0){
+        html+=`<div class="empty-day">暂无任务，在上方输入框添加</div>`;
+      }else{
+        const sorted=[...tasks].sort((a,b)=>a.done===b.done?0:a.done?1:-1);
+        for(let idx=0;idx<sorted.length;idx++){
+          const t=sorted[idx];
+          const realIdx=tasks.indexOf(t);
+          html+=`<div class="task-row ${t.done?'done':''}" draggable="true" ondragstart="dragStart(${realIdx})" ondragover="event.preventDefault();dragOver(${realIdx})" ondragend="dragEnd('${dateStr}')">
+            <div class="drag-handle">⠿</div>
+            <button class="checkbox ${t.done?'checked':''}" onclick="toggleDone('${dateStr}',${realIdx})">
+              ${t.done?'<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+            </button>
+            <div class="task-content">
+              <span class="task-text">${esc(t.text)}</span>
+              ${t.carriedFrom?`<span class="carried-badge">← 顺延自${fmt(t.carriedFrom)}</span>`:''}
+            </div>
+            <button class="menu-btn" onclick="event.stopPropagation();toggleMenu('${dateStr}',${realIdx})">⋮
+              <div class="menu ${openMenu&&openMenu.date===dateStr&&openMenu.idx===realIdx?'open':''}">
+                ${openMenu&&openMenu.date===dateStr&&openMenu.idx===realIdx?(moveMode?renderMoveMenu(dateStr,realIdx,weekDays):renderNormalMenu(dateStr,realIdx)):''}
+              </div>
+            </button>
+          </div>`;
+        }
+      }
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('app').innerHTML=html;
+}
+
+function renderNormalMenu(date,idx){
+  const t=(allTasks[date]||[])[idx];
+  return `
+    <button class="menu-item" onclick="event.stopPropagation();toggleDone('${date}',${idx})">${t&&t.done?'↩ 取消完成':'✓ 标记完成'}</button>
+    <button class="menu-item" onclick="event.stopPropagation();enterMoveMode()">↗ 移动到...</button>
+    <button class="menu-item danger" onclick="event.stopPropagation();deleteTask('${date}',${idx})">✕ 删除</button>`;
+}
+function renderMoveMenu(date,idx,weekDays){
+  let h=`<div class="menu-header">移动到：</div>`;
+  for(const dd of weekDays){
+    if(dd===date)continue;
+    const d=new Date(dd+'T00:00:00');
+    h+=`<button class="menu-item" onclick="event.stopPropagation();moveTask('${date}',${idx},'${dd}')">${fmt(dd)} ${DAY_NAMES[d.getDay()]}${dd===todayStr()?' (今天)':''}</button>`;
+  }
+  return h;
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ─── Actions ───
+function toggleDay(d){expandedDay=expandedDay===d?null:d;openMenu=null;moveMode=false;render()}
+function goWeek(dir){weekOffset+=dir;expandedDay=null;openMenu=null;render()}
+function goToday(){weekOffset=0;expandedDay=todayStr();render()}
+
+function addTask(){
+  const inp=document.getElementById('taskInput');
+  const text=inp.value.trim();
+  if(!text||!expandedDay)return;
+  if(!allTasks[expandedDay])allTasks[expandedDay]=[];
+  allTasks[expandedDay].push({id:Date.now().toString(),text,done:false,createdAt:new Date().toISOString()});
+  saveData();inp.value='';render();
+}
+function toggleDone(date,idx){
+  allTasks[date][idx].done=!allTasks[date][idx].done;
+  openMenu=null;moveMode=false;saveData();render();
+}
+function deleteTask(date,idx){
+  allTasks[date].splice(idx,1);
+  openMenu=null;moveMode=false;saveData();render();
+}
+function toggleMenu(date,idx){
+  if(openMenu&&openMenu.date===date&&openMenu.idx===idx){openMenu=null;moveMode=false}
+  else{openMenu={date,idx};moveMode=false}
+  render();
+}
+function enterMoveMode(){moveMode=true;render()}
+function moveTask(from,idx,to){
+  const task=allTasks[from][idx];
+  allTasks[from].splice(idx,1);
+  if(!allTasks[to])allTasks[to]=[];
+  allTasks[to].push({...task,done:false});
+  openMenu=null;moveMode=false;saveData();render();
+}
+
+let _dragIdx=null,_dragOverIdx=null;
+function dragStart(i){_dragIdx=i}
+function dragOver(i){_dragOverIdx=i}
+function dragEnd(date){
+  if(_dragIdx!==null&&_dragOverIdx!==null&&_dragIdx!==_dragOverIdx){
+    const tasks=allTasks[date];
+    const[moved]=tasks.splice(_dragIdx,1);
+    tasks.splice(_dragOverIdx,0,moved);
+    saveData();
+  }
+  _dragIdx=null;_dragOverIdx=null;render();
+}
+
+// Close menu on outside click
+document.addEventListener('click',e=>{
+  if(openMenu&&!e.target.closest('.menu-btn')){openMenu=null;moveMode=false;render()}
+});
+
+// ─── Init ───
+loadData();
+render();
+</script>
+</body>
+</html>
