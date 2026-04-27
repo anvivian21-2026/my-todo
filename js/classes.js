@@ -79,10 +79,27 @@ const ClassesApp = {
       teacher: c.teacher
     }));
     await syncSave(SB_ID_COURSES, { list: coursesFormat });
+
+    // 通知日历模块刷新内存中的课程库
+    // (临时跨模块调用,以后可改为事件总线)
+    this._notifyCalendar(coursesFormat);
   },
 
   async saveStudents() {
     await syncSave(SB_ID_STUDENTS, { list: this.state.students });
+  },
+
+  // 让 CalendarApp 拿到最新课程库
+  // 这样新建/改名/删除班级后,不用刷新页面,日历下拉就能看到最新的
+  _notifyCalendar(courses) {
+    if (typeof CalendarApp !== 'undefined' && CalendarApp.state) {
+      CalendarApp.state.courses = courses;
+      // 如果日历正在前台显示,顺便重绘一下(比如详情区里的班级名会立即更新)
+      const calView = document.getElementById('view-cal');
+      if (calView && calView.style.display !== 'none' && typeof CalendarApp.render === 'function') {
+        CalendarApp.render();
+      }
+    }
   },
 
   // ─── 工具:按 id 查班级 ───────────────────────────────
