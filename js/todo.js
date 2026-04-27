@@ -186,4 +186,146 @@ const TodoApp = {
           for (let idx = 0; idx < sorted.length; idx++) {
             const t = sorted[idx];
             const realIdx = tasks.indexOf(t);
-            html += `<div class="task-row ${t.done ? 'done' : ''}" draggable="true" ondragstart="TodoApp.dragStart(${re
+            html += `<div class="task-row ${t.done ? 'done' : ''}" draggable="true" ondragstart="TodoApp.dragStart(${realIdx})" ondragover="event.preventDefault();TodoApp.dragOver(${realIdx})" ondragend="TodoApp.dragEnd('${dateStr}')">
+              <div class="drag-handle">⠿</div>
+              <button class="checkbox ${t.done ? 'checked' : ''}" onclick="TodoApp.toggleDone('${dateStr}',${realIdx})">
+                ${t.done ? '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+              </button>
+              <div class="task-content">
+                <span class="task-text">${esc(t.text)}</span>
+                ${t.carriedFrom ? `<span class="carried-badge">← 顺延自${fmt(t.carriedFrom)}</span>` : ''}
+              </div>
+              <button class="menu-btn" onclick="event.stopPropagation();TodoApp.toggleMenu('${dateStr}',${realIdx})">⋮
+                <div class="menu ${s.openMenu && s.openMenu.date === dateStr && s.openMenu.idx === realIdx ? 'open' : ''}">
+                  ${s.openMenu && s.openMenu.date === dateStr && s.openMenu.idx === realIdx ? (s.moveMode ? this._renderMoveMenu(dateStr, realIdx, weekDays) : this._renderNormalMenu(dateStr, realIdx)) : ''}
+                </div>
+              </button>
+            </div>`;
+          }
+        }
+        html += `</div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+
+    document.getElementById('view-todo').innerHTML = html;
+  },
+
+  _renderNormalMenu(date, idx) {
+    const t = (this.state.allTasks[date] || [])[idx];
+    return `
+      <button class="menu-item" onclick="event.stopPropagation();TodoApp.toggleDone('${date}',${idx})">${t && t.done ? '↩ 取消完成' : '✓ 标记完成'}</button>
+      <button class="menu-item" onclick="event.stopPropagation();TodoApp.enterMoveMode()">↗ 移动到...</button>
+      <button class="menu-item danger" onclick="event.stopPropagation();TodoApp.deleteTask('${date}',${idx})">✕ 删除</button>`;
+  },
+
+  _renderMoveMenu(date, idx, weekDays) {
+    let h = `<div class="menu-header">移动到:</div>`;
+    for (const dd of weekDays) {
+      if (dd === date) continue;
+      const d = new Date(dd + 'T00:00:00');
+      h += `<button class="menu-item" onclick="event.stopPropagation();TodoApp.moveTask('${date}',${idx},'${dd}')">${fmt(dd)} ${DAY_NAMES[d.getDay()]}${dd === todayStr() ? ' (今天)' : ''}</button>`;
+    }
+    return h;
+  },
+
+  // ─── 操作 ───────────────────────────────────────────────
+  toggleDay(d) {
+    this.state.expandedDay = this.state.expandedDay === d ? null : d;
+    this.state.openMenu = null;
+    this.state.moveMode = false;
+    this.render();
+  },
+
+  goWeek(dir) {
+    this.state.weekOffset += dir;
+    this.state.expandedDay = null;
+    this.state.openMenu = null;
+    this.render();
+  },
+
+  goToday() {
+    this.state.weekOffset = 0;
+    this.state.expandedDay = todayStr();
+    this.render();
+  },
+
+  addTask() {
+    const inp = document.getElementById('taskInput');
+    const text = inp.value.trim();
+    if (!text || !this.state.expandedDay) return;
+    if (!this.state.allTasks[this.state.expandedDay]) {
+      this.state.allTasks[this.state.expandedDay] = [];
+    }
+    this.state.allTasks[this.state.expandedDay].push({
+      id: Date.now().toString(),
+      text,
+      done: false,
+      createdAt: new Date().toISOString()
+    });
+    this.saveData();
+    inp.value = '';
+    this.render();
+  },
+
+  toggleDone(date, idx) {
+    this.state.allTasks[date][idx].done = !this.state.allTasks[date][idx].done;
+    this.state.openMenu = null;
+    this.state.moveMode = false;
+    this.saveData();
+    this.render();
+  },
+
+  deleteTask(date, idx) {
+    this.state.allTasks[date].splice(idx, 1);
+    this.state.openMenu = null;
+    this.state.moveMode = false;
+    this.saveData();
+    this.render();
+  },
+
+  toggleMenu(date, idx) {
+    const m = this.state.openMenu;
+    if (m && m.date === date && m.idx === idx) {
+      this.state.openMenu = null;
+      this.state.moveMode = false;
+    } else {
+      this.state.openMenu = { date, idx };
+      this.state.moveMode = false;
+    }
+    this.render();
+  },
+
+  enterMoveMode() {
+    this.state.moveMode = true;
+    this.render();
+  },
+
+  moveTask(from, idx, to) {
+    const task = this.state.allTasks[from][idx];
+    this.state.allTasks[from].splice(idx, 1);
+    if (!this.state.allTasks[to]) this.state.allTasks[to] = [];
+    this.state.allTasks[to].push({ ...task, done: false });
+    this.state.openMenu = null;
+    this.state.moveMode = false;
+    this.saveData();
+    this.render();
+  },
+
+  // 拖拽排序
+  dragStart(i) { this.state._dragIdx = i; },
+  dragOver(i) { this.state._dragOverIdx = i; },
+  dragEnd(date) {
+    const s = this.state;
+    if (s._dragIdx !== null && s._dragOverIdx !== null && s._dragIdx !== s._dragOverIdx) {
+      const tasks = s.allTasks[date];
+      const [moved] = tasks.splice(s._dragIdx, 1);
+      tasks.splice(s._dragOverIdx, 0, moved);
+      this.saveData();
+    }
+    s._dragIdx = null;
+    s._dragOverIdx = null;
+    this.render();
+  }
+};
