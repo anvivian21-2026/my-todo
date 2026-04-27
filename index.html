@@ -4,22 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#3a3226">
 <title>每日待办</title>
 
-<!-- PWA 配置(原样保留) -->
+<!-- PWA 配置 -->
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!-- ============================================================
      样式文件
-     ============================================================
-     todo.css = 待办视图样式
-     calendar.css 第二阶段会加入
+     todo.css     = 待办视图样式
+     calendar.css = 日历视图样式
      ============================================================ -->
 <link rel="stylesheet" href="css/todo.css">
+<link rel="stylesheet" href="css/calendar.css">
 
 </head>
 <body>
@@ -27,27 +28,41 @@
 <!-- ============================================================
      应用骨架
      ============================================================
-     这个 #app 容器只是一个挂载点。
-     里面的内容由 todo.js 动态生成,不用手写。
+     #app 是整个应用的根挂载点
+     #view-todo 由 todo.js 动态填充
+     #view-cal  由 calendar.js 动态填充
+     标签按钮在两个视图之上,切换时只是显示/隐藏对应容器
      ============================================================ -->
 <div id="app">
+
+  <!-- 待办视图(默认显示) -->
   <div id="view-todo"></div>
-  <!-- view-cal 会在第二阶段加入(日历视图) -->
+
+  <!-- 标签切换条(贴在两个视图之间) -->
+  <div class="tabs">
+    <button id="tab-todo" class="tab-btn tab-active">待办</button>
+    <button id="tab-cal" class="tab-btn">日历</button>
+  </div>
+
+  <!-- 日历视图(默认隐藏) -->
+  <div id="view-cal" style="display:none;"></div>
+
 </div>
 
 <!-- ============================================================
-     脚本加载顺序(必须按这个顺序)
-     ============================================================
-     1. config.js  - 全局常量
-     2. utils.js   - 工具函数
-     3. sync.js    - Supabase 同步
-     4. todo.js    - 待办模块(依赖前面 3 个)
-     5. app.js     - 启动器(必须最后)
+     脚本加载顺序
+     1. config.js   - 全局常量
+     2. utils.js    - 工具函数
+     3. sync.js     - Supabase 同步
+     4. todo.js     - 待办模块
+     5. calendar.js - 日历模块
+     6. app.js      - 启动器(必须最后)
      ============================================================ -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/todo.js"></script>
+<script src="js/calendar.js"></script>
 <script src="js/app.js"></script>
 
 </body>
