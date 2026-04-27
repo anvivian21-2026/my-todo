@@ -1,0 +1,304 @@
+/* ============================================================
+   todo.css — 待办视图样式
+   ============================================================
+   原本写在 index.html 的 <style> 块里,现在拆出来。
+   日历样式将来会单独放在 calendar.css。
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f0eb;
+  color: #2d2d2d;
+  overflow-x: hidden;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ─── Header ──────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #3a3226, #5c4a3a);
+  padding: 20px 20px 14px;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 20px rgba(60, 45, 30, .15);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.app-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 2px;
+}
+.today-chip {
+  background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .25);
+  color: #eee;
+  font-size: 12px;
+  border-radius: 20px;
+  padding: 4px 12px;
+  cursor: pointer;
+  display: none;
+}
+.today-chip.show { display: inline-block; }
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.nav-arrow {
+  background: rgba(255, 255, 255, .12);
+  border: none;
+  color: #ddd;
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.week-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .9);
+  letter-spacing: 1px;
+}
+
+/* ─── Input bar ───────────────────────────────────────────── */
+.input-bar {
+  position: sticky;
+  top: 98px;
+  z-index: 90;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f5f0eb;
+}
+.input-bar input {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 2px solid #e0d6cc;
+  background: #fff;
+  color: #2d2d2d;
+  font-size: 15px;
+  outline: none;
+}
+.input-bar input:focus { border-color: #c4956a; }
+.input-bar input:disabled { opacity: .5; }
+.add-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #c4956a, #a07850);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(180, 130, 90, .3);
+  transition: opacity .2s;
+}
+.add-btn svg { pointer-events: none; }
+
+/* ─── Day list ────────────────────────────────────────────── */
+.day-list {
+  padding: 4px 16px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.day-block {
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(60, 45, 30, .06);
+  position: relative;
+  z-index: 1;
+}
+.day-block.expanded { z-index: 10; }
+
+.day-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 14px;
+  transition: background .15s;
+}
+.day-row.today { background: linear-gradient(135deg, #c4956a, #a07850); }
+.day-row.past { background: #fafaf8; }
+.day-row.expanded { border-radius: 14px 14px 0 0; border-bottom: 1px solid #f0ebe5; }
+
+.day-left { display: flex; align-items: center; gap: 10px; }
+.day-name { font-size: 16px; font-weight: 700; min-width: 36px; }
+.day-date { font-size: 13px; color: #999; font-weight: 500; }
+.today .day-name { color: #fff; }
+.today .day-date { color: rgba(255, 255, 255, .8); }
+.past:not(.today) .day-name { color: #999; }
+.past:not(.today) .day-date { color: #bbb; }
+.today-dot {
+  font-size: 10px;
+  background: rgba(255, 255, 255, .3);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.day-right { display: flex; align-items: center; gap: 8px; }
+.task-count {
+  font-size: 11px;
+  background: #f5f0eb;
+  color: #a07850;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.today .task-count { background: rgba(255, 255, 255, .25); color: #fff; }
+.chevron {
+  font-size: 20px;
+  color: #ccc;
+  transition: transform .2s;
+  font-weight: 300;
+}
+.today .chevron { color: #fff; }
+.expanded .chevron { transform: rotate(90deg); }
+
+/* ─── Tasks ───────────────────────────────────────────────── */
+.task-list { padding: 6px 0; }
+.empty-day {
+  padding: 20px;
+  text-align: center;
+  color: #c4b5a5;
+  font-size: 13px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 6px;
+  margin: 0 8px;
+  border-radius: 10px;
+  transition: background .15s, opacity .2s;
+}
+.task-row.done { opacity: .55; }
+.task-row.drag-over { background: #f5f0eb; }
+
+.drag-handle {
+  color: #d4ccc2;
+  font-size: 14px;
+  cursor: grab;
+  user-select: none;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid #d4ccc2;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .15s;
+  padding: 0;
+}
+.checkbox.checked { background: #a07850; border-color: #a07850; }
+
+.task-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.task-text {
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.task-row.done .task-text { text-decoration: line-through; color: #aaa; }
+.carried-badge {
+  font-size: 11px;
+  color: #c4956a;
+  font-weight: 500;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #bbb;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  position: relative;
+}
+
+/* ─── Menu ────────────────────────────────────────────────── */
+.menu {
+  position: absolute;
+  right: 0;
+  bottom: 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .18);
+  border: 1px solid #f0ebe5;
+  min-width: 150px;
+  z-index: 999;
+  overflow: hidden;
+  display: none;
+}
+.menu.open { display: block; }
+.menu-header {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: #2d2d2d;
+  cursor: pointer;
+}
+.menu-item:active { background: #f5f0eb; }
+.menu-item.danger { color: #e05252; }
