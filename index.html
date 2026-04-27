@@ -18,9 +18,11 @@
      样式文件
      todo.css     = 待办视图样式
      calendar.css = 日历视图样式
+     classes.css  = 班级视图样式
      ============================================================ -->
 <link rel="stylesheet" href="css/todo.css">
 <link rel="stylesheet" href="css/calendar.css">
+<link rel="stylesheet" href="css/classes.css">
 
 </head>
 <body>
@@ -29,23 +31,28 @@
      应用骨架
      ============================================================
      #app 是整个应用的根挂载点
-     #view-todo 由 todo.js 动态填充
-     #view-cal  由 calendar.js 动态填充
-     标签按钮在两个视图之上,切换时只是显示/隐藏对应容器
+     #view-todo    由 todo.js 动态填充
+     #view-cal     由 calendar.js 动态填充
+     #view-classes 由 classes.js 动态填充
+     标签按钮在三个视图之上,切换时只是显示/隐藏对应容器
      ============================================================ -->
 <div id="app">
 
   <!-- 待办视图(默认显示) -->
   <div id="view-todo"></div>
 
-  <!-- 标签切换条(贴在两个视图之间) -->
+  <!-- 标签切换条(三栏) -->
   <div class="tabs">
     <button id="tab-todo" class="tab-btn tab-active">待办</button>
     <button id="tab-cal" class="tab-btn">日历</button>
+    <button id="tab-classes" class="tab-btn">班级</button>
   </div>
 
   <!-- 日历视图(默认隐藏) -->
   <div id="view-cal" style="display:none;"></div>
+
+  <!-- 班级视图(默认隐藏) -->
+  <div id="view-classes" style="display:none;"></div>
 
 </div>
 
@@ -56,13 +63,15 @@
      3. sync.js     - Supabase 同步
      4. todo.js     - 待办模块
      5. calendar.js - 日历模块
-     6. app.js      - 启动器(必须最后)
+     6. classes.js  - 班级模块
+     7. app.js      - 启动器(必须最后)
      ============================================================ -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/todo.js"></script>
 <script src="js/calendar.js"></script>
+<script src="js/classes.js"></script>
 <script src="js/app.js"></script>
 
 </body>
