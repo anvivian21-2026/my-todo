@@ -1,19 +1,34 @@
 // ============================================================
 // calendar.js — 日历模块
 // ============================================================
+// 整个日历功能装在 CalendarApp 这个对象里。
+// 与 todo.js / classes.js 完全独立,互不调用。
+//
+// 数据存储:
+//   - 排课数据:Supabase id='calendar',结构 { 'YYYY-MM-DD': [{courseId, start}] }
+//   - 课程库(只读):Supabase id='courses',由班级模块写入(ClassesApp 同步而来)
+//
+// 注意:从批次 8 开始,班级管理统一归 ClassesApp 管。
+//      日历模块只**读取** courses,不再提供"管理课程"入口。
+//
+// 节假日数据来自 config.js 的 HOLIDAYS / WORKDAYS
+// 老师配置来自 config.js 的 TEACHERS
+// ============================================================
 
 const CalendarApp = {
 
+  // ─── 状态 ─────────────────────────────────────────────
   state: {
-    classes: {},
-    courses: [],
-    viewYear: 0,
-    viewMonth: 0,
-    selectedDate: null,
-    sortMode: 'time',
-    collapsedGroups: {}
+    classes: {},              // 排课数据
+    courses: [],              // 课程库(由班级模块同步过来)
+    viewYear: 0,              // 当前显示年份
+    viewMonth: 0,             // 当前显示月份(0-11)
+    selectedDate: null,       // 选中的日期(用于详情区显示)
+    sortMode: 'time',         // 'time' 按时间排序 | 'teacher' 按老师分组
+    collapsedGroups: {}       // 哪些老师组被收起了 { 'vivian': true, ... }
   },
 
+  // ─── 初始化 ───────────────────────────────────────────
   init() {
     const t = todayCN();
     this.state.viewYear = t.y;
@@ -21,18 +36,16 @@ const CalendarApp = {
     this.loadData();
   },
 
+  // ─── 数据加载 ─────────────────────────────────────────
   async loadData() {
+    // 加载课程库(只读,由班级模块负责写入)
     const courseData = await syncLoad(SB_ID_COURSES);
     if (courseData && courseData.list) {
       this.state.courses = courseData.list;
-    } else {
-      this.state.courses = [
-        { id: 'c1', name: 'PU2 三年级', teacher: 'miranda' },
-        { id: 'c2', name: 'PU2 二年级', teacher: 'vivian'  }
-      ];
-      await syncSave(SB_ID_COURSES, { list: this.state.courses });
     }
+    // 注:不再种入示例课程。如果没有课程,班级模块会引导用户去新建。
 
+    // 加载排课数据
     const classData = await syncLoad(SB_ID_CALENDAR);
     if (classData) this.state.classes = classData;
 
@@ -43,10 +56,7 @@ const CalendarApp = {
     await syncSave(SB_ID_CALENDAR, this.state.classes);
   },
 
-  async saveCourses() {
-    await syncSave(SB_ID_COURSES, { list: this.state.courses });
-  },
-
+  // ─── 工具:根据 id 找课程 ─────────────────────────────
   getCourse(id) {
     return this.state.courses.find(c => c.id === id);
   },
@@ -55,6 +65,7 @@ const CalendarApp = {
     return list.slice().sort((a, b) => (a.start || '').localeCompare(b.start || ''));
   },
 
+  // ─── 渲染日历主视图 ───────────────────────────────────
   render() {
     const s = this.state;
     const t = todayCN();
@@ -73,7 +84,6 @@ const CalendarApp = {
           <button class="cal-today-btn" onclick="CalendarApp.goToday()">今天</button>
         </div>
         <div class="cal-nav-right">
-          <button class="cal-manage-btn" onclick="CalendarApp.openManage()">管理课程</button>
           <button class="cal-add-btn" onclick="CalendarApp.openAdd()">+ 添加课程</button>
         </div>
       </div>
@@ -92,10 +102,12 @@ const CalendarApp = {
 
       <div class="cal-grid">`;
 
+    // 月份开头的占位空格
     for (let i = 0; i < offset; i++) {
       html += '<div class="cal-cell empty"></div>';
     }
 
+    // 月份的每一天
     for (let d = 1; d <= daysInMonth; d++) {
       const dStr = fmtDate(s.viewYear, s.viewMonth, d);
       const dow = new Date(s.viewYear, s.viewMonth, d).getDay();
@@ -117,6 +129,7 @@ const CalendarApp = {
       else if (workday) cellHtml += `<span class="cal-badge workday-badge">班</span>`;
       cellHtml += `</div>`;
 
+      // 横条(最多 3 条,超出显示 +N)
       cellHtml += `<div class="cal-bars">`;
       list.slice(0, 3).forEach(c => {
         const course = this.getCourse(c.courseId);
@@ -136,6 +149,7 @@ const CalendarApp = {
 
     html += `</div>`;
 
+    // 详情区域
     if (s.selectedDate) {
       html += this._renderDetail(s.selectedDate);
     }
@@ -144,6 +158,7 @@ const CalendarApp = {
     document.getElementById('view-cal').innerHTML = html;
   },
 
+  // ─── 渲染详情区(含排序切换器)─────────────────────
   _renderDetail(dStr) {
     const s = this.state;
     const [y, m, d] = dStr.split('-');
@@ -152,6 +167,7 @@ const CalendarApp = {
     const workday = WORKDAYS[dStr];
     const list = s.classes[dStr] || [];
 
+    // 头部:日期 + 节假日标记
     let html = `<div class="cal-detail">
       <div class="cal-detail-head">
         <div>
@@ -160,6 +176,7 @@ const CalendarApp = {
     else if (workday) html += ` <span class="cal-detail-tag workday-tag">调休补班</span>`;
     html += `</div>`;
 
+    // 排序切换器(只有 2 节及以上才显示,1 节没必要分组)
     if (list.length >= 2) {
       html += `<div class="cal-sort-toggle">
         <button class="cal-sort-btn ${s.sortMode === 'time' ? 'active' : ''}" onclick="CalendarApp.setSortMode('time')">🕐 时间</button>
@@ -168,6 +185,7 @@ const CalendarApp = {
     }
     html += `</div>`;
 
+    // 主体:按当前模式渲染
     if (list.length === 0) {
       html += `<div class="cal-empty">这天还没排课</div>`;
     } else if (s.sortMode === 'teacher') {
@@ -180,6 +198,7 @@ const CalendarApp = {
     return html;
   },
 
+  // 按时间渲染
   _renderByTime(dStr, list) {
     const sorted = this._sortByStart(list);
     let html = '';
@@ -189,6 +208,7 @@ const CalendarApp = {
     return html;
   },
 
+  // 按老师分组渲染
   _renderByTeacher(dStr, list) {
     let html = '';
     const teacherKeys = Object.keys(TEACHERS);
@@ -218,13 +238,14 @@ const CalendarApp = {
     return html;
   },
 
+  // 渲染单节课
   _renderClassItem(dStr, c) {
     const course = this.getCourse(c.courseId);
     if (!course) {
-      return `<div class="cal-class-item" style="background:#eee;color:#888;">(课程已删除)</div>`;
+      return `<div class="cal-class-item" style="background:#eee;color:#888;">(班级已删除)</div>`;
     }
     const teach = TEACHERS[course.teacher];
-    const end = c.start ? addHours(c.start, 2) : '';
+    const end = c.start ? addHours(c.start, DEFAULT_CLASS_DURATION) : '';
     const realIdx = (this.state.classes[dStr] || []).indexOf(c);
     return `<div class="cal-class-item" style="background:${teach.color};color:${teach.textColor}">
       <strong>${teach.letter}</strong>
@@ -234,6 +255,7 @@ const CalendarApp = {
     </div>`;
   },
 
+  // ─── 排序模式切换 ─────────────────────────────────────
   setSortMode(mode) {
     this.state.sortMode = mode;
     if (mode === 'time') {
@@ -248,6 +270,7 @@ const CalendarApp = {
     this.render();
   },
 
+  // ─── 月份导航 ─────────────────────────────────────────
   prevMonth() {
     const s = this.state;
     s.viewMonth--;
@@ -275,9 +298,10 @@ const CalendarApp = {
     this.render();
   },
 
+  // ─── 添加课程(排课)弹窗 ─────────────────────────────
   openAdd() {
     if (this.state.courses.length === 0) {
-      alert('还没有课程,请先点"管理课程"添加一个');
+      alert('还没有班级,请先在"班级"标签里新建一个');
       return;
     }
     const t = todayCN();
@@ -285,7 +309,7 @@ const CalendarApp = {
 
     let courseOpts = this.state.courses.map(c => {
       const teach = TEACHERS[c.teacher];
-      return `<option value="${c.id}">${esc(c.name)} — ${teach.name}</option>`;
+      return `<option value="${c.id}">${esc(c.name)} — ${teach ? teach.name : '?'}</option>`;
     }).join('');
 
     const html = `<div class="cal-modal-bg" id="cal-modal-add" onclick="if(event.target===this)CalendarApp.closeModal()">
@@ -293,9 +317,9 @@ const CalendarApp = {
         <h3>添加课程</h3>
         <label>日期</label>
         <input type="date" id="cal-m-date" value="${defaultDate}">
-        <label>课程</label>
+        <label>班级</label>
         <select id="cal-m-course">${courseOpts}</select>
-        <label>开始时间(默认 2 小时)</label>
+        <label>开始时间(默认 ${DEFAULT_CLASS_DURATION} 小时)</label>
         <input type="time" id="cal-m-start" value="19:00">
         <div class="cal-modal-actions">
           <button onclick="CalendarApp.closeModal()">取消</button>
@@ -310,8 +334,6 @@ const CalendarApp = {
   closeModal() {
     const m = document.getElementById('cal-modal-add');
     if (m) m.remove();
-    const m2 = document.getElementById('cal-modal-manage');
-    if (m2) m2.remove();
   },
 
   _showModal(html) {
@@ -341,83 +363,11 @@ const CalendarApp = {
     const s = this.state;
     const c = s.classes[dStr][idx];
     const course = this.getCourse(c.courseId);
-    const name = course ? course.name : '(课程已删除)';
+    const name = course ? course.name : '(班级已删除)';
     if (!confirm(`确定删除这节课吗?\n\n${name} · ${c.start || ''}`)) return;
     s.classes[dStr].splice(idx, 1);
     if (s.classes[dStr].length === 0) delete s.classes[dStr];
     await this.saveClasses();
-    this.render();
-  },
-
-  openManage() {
-    let listHtml = '';
-    if (this.state.courses.length === 0) {
-      listHtml = '<div class="cal-empty">还没有课程</div>';
-    } else {
-      listHtml = this.state.courses.map(c => {
-        const teach = TEACHERS[c.teacher];
-        return `<div class="cal-class-item" style="background:${teach.color};color:${teach.textColor}">
-          <strong>${teach.letter}</strong>
-          <span style="flex:1">${esc(c.name)}</span>
-          <button class="cal-class-del" onclick="CalendarApp.deleteCourse('${c.id}')" style="color:${teach.textColor}">删除</button>
-        </div>`;
-      }).join('');
-    }
-
-    const html = `<div class="cal-modal-bg" id="cal-modal-manage" onclick="if(event.target===this)CalendarApp.closeModal()">
-      <div class="cal-modal-box">
-        <h3>管理课程</h3>
-        <p class="cal-course-tip">添加新课程后,在"添加课程"弹窗里就能选到。每个课程绑定一位老师。</p>
-        <div class="cal-course-list">${listHtml}</div>
-        <div class="cal-course-divider">
-          <label>新课程名</label>
-          <input type="text" id="cal-new-name" placeholder="例:PU2 三年级">
-          <label>归属老师</label>
-          <select id="cal-new-teacher">
-            <option value="vivian">Vivian (蓝)</option>
-            <option value="miranda">Miranda (橙)</option>
-          </select>
-          <button class="primary" style="width:100%;margin-top:10px;padding:9px;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;color:#fff;" onclick="CalendarApp.addCourse()">+ 添加这个课程</button>
-        </div>
-        <div class="cal-modal-actions">
-          <button onclick="CalendarApp.closeModal()">关闭</button>
-        </div>
-      </div>
-    </div>`;
-
-    this._showModal(html);
-  },
-
-  async addCourse() {
-    const name = document.getElementById('cal-new-name').value.trim();
-    const teacher = document.getElementById('cal-new-teacher').value;
-    if (!name) { alert('请输入课程名'); return; }
-    this.state.courses.push({
-      id: 'c' + Date.now(),
-      name,
-      teacher
-    });
-    await this.saveCourses();
-    this.closeModal();
-    this.openManage();
-  },
-
-  async deleteCourse(id) {
-    const c = this.getCourse(id);
-    if (!c) return;
-    let used = 0;
-    Object.values(this.state.classes).forEach(arr => arr.forEach(x => {
-      if (x.courseId === id) used++;
-    }));
-    let msg = `确定删除课程"${c.name}"吗?`;
-    if (used > 0) {
-      msg += `\n\n注意:这个课程已经在日历上排了 ${used} 节课,删除后那些课会显示为"(课程已删除)"。`;
-    }
-    if (!confirm(msg)) return;
-    this.state.courses = this.state.courses.filter(x => x.id !== id);
-    await this.saveCourses();
-    this.closeModal();
-    this.openManage();
     this.render();
   }
 };
