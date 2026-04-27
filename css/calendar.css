@@ -1,11 +1,7 @@
 /* ============================================================
    calendar.css — 日历视图样式
-   ============================================================
-   独立于待办样式,日历相关的所有 CSS 都在这里。
-   修改日历外观时只需要动这个文件。
    ============================================================ */
 
-/* ─── 顶部标签切换("待办 / 日历") ─────────────────────── */
 .tabs {
   display: flex;
   gap: 4px;
@@ -32,13 +28,11 @@
   box-shadow: 0 -1px 4px rgba(0,0,0,0.04);
 }
 
-/* ─── 日历视图容器 ──────────────────────────────────────── */
 .cal-wrap {
   padding: 14px 16px 100px;
   background: #fff;
 }
 
-/* ─── 月份导航 ──────────────────────────────────────────── */
 .cal-nav {
   display: flex;
   align-items: center;
@@ -101,7 +95,6 @@
   box-shadow: 0 2px 8px rgba(180, 130, 90, .3);
 }
 
-/* ─── 图例 ──────────────────────────────────────────────── */
 .cal-legend {
   display: flex;
   gap: 14px;
@@ -127,7 +120,6 @@
   border-radius: 3px;
 }
 
-/* ─── 周表头 ───────────────────────────────────────────── */
 .cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -141,7 +133,6 @@
   color: #C0392B;
 }
 
-/* ─── 日历格子 ─────────────────────────────────────────── */
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -211,7 +202,6 @@
   background: #BA7517;
 }
 
-/* ─── 格子内的小横条 ──────────────────────────────────── */
 .cal-bars {
   display: flex;
   flex-direction: column;
@@ -233,7 +223,6 @@
   padding: 0 3px;
 }
 
-/* ─── 详情区域(点格子后下方显示)─────────────────── */
 .cal-detail {
   margin-top: 14px;
   padding: 12px;
@@ -259,6 +248,64 @@
 }
 .cal-detail-tag.holiday-tag { color: #A32D2D; }
 .cal-detail-tag.workday-tag { color: #854F0B; }
+
+.cal-sort-toggle {
+  display: inline-flex;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2px;
+  font-size: 11px;
+  border: 1px solid #e0d6cc;
+}
+.cal-sort-btn {
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 11px;
+  transition: all 0.15s;
+}
+.cal-sort-btn.active {
+  background: #3a3226;
+  color: #fff;
+}
+
+.cal-group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.cal-group-head:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+.cal-group-head:first-child {
+  margin-top: 0;
+}
+.cal-group-head .arrow {
+  display: inline-block;
+  font-size: 10px;
+  width: 12px;
+  transition: transform 0.15s;
+}
+.cal-group-head.collapsed .arrow {
+  transform: rotate(-90deg);
+}
+.cal-group-count {
+  color: #888;
+  font-weight: 400;
+}
 
 .cal-class-item {
   display: flex;
@@ -291,7 +338,6 @@
   padding: 8px 0;
 }
 
-/* ─── 弹窗(添加课程 / 管理课程)──────────────────── */
 .cal-modal-bg {
   position: fixed;
   inset: 0;
@@ -367,7 +413,6 @@
   border: none;
 }
 
-/* ─── 课程库管理弹窗里的课程列表 ──────────────────── */
 .cal-course-list {
   margin-bottom: 14px;
 }
