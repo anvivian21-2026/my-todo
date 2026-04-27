@@ -1,0 +1,325 @@
+/* ============================================================
+   classes.css — 班级模块样式
+   ============================================================
+   独立于待办、日历样式,班级相关的所有 CSS 都在这里。
+   修改班级外观时只需要动这个文件。
+   ============================================================ */
+
+
+/* ─── 班级视图容器 ──────────────────────────────────────── */
+.cls-wrap {
+  padding: 14px 16px 100px;
+  background: #fff;
+  min-height: 100vh;
+}
+
+
+/* ─── 顶部导航(标题 + 操作按钮)──────────────────────── */
+.cls-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.cls-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cls-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #3a3226;
+}
+.cls-subtitle {
+  font-size: 12px;
+  color: #888;
+}
+.cls-nav-right {
+  display: flex;
+  gap: 6px;
+}
+.cls-unassigned-btn {
+  background: #fff;
+  border: 1px solid #e0d6cc;
+  color: #666;
+  padding: 0 12px;
+  height: 32px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.cls-unassigned-btn:hover {
+  border-color: #c4956a;
+  color: #3a3226;
+}
+.cls-add-btn {
+  background: linear-gradient(135deg, #c4956a, #a07850);
+  color: #fff;
+  border: none;
+  padding: 0 14px;
+  height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(180, 130, 90, .3);
+}
+
+
+/* ─── 班级卡片列表 ──────────────────────────────────────── */
+.cls-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cls-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-left: 4px solid #ccc;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cls-card:hover {
+  border-color: #c4956a;
+  border-left-color: #c4956a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.cls-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.cls-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #3a3226;
+}
+.cls-card-teacher {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.cls-card-meta {
+  font-size: 12px;
+  color: #888;
+}
+.cls-card-meta .empty-tip {
+  color: #c4b5a5;
+  font-style: italic;
+}
+
+
+/* ─── 空状态(还没有任何班级)───────────────────────── */
+.cls-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+.cls-empty-state .icon {
+  font-size: 40px;
+  opacity: 0.4;
+  margin-bottom: 10px;
+}
+.cls-empty-state .tip {
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.cls-empty-state .cls-add-btn {
+  height: 38px;
+  padding: 0 18px;
+}
+
+
+/* ─── 弹窗(新建/编辑班级 等)───────────────────────── */
+.cls-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.cls-modal-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.cls-modal-box h3 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #3a3226;
+}
+.cls-modal-box label {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+  margin-top: 10px;
+}
+.cls-modal-box label:first-of-type {
+  margin-top: 0;
+}
+.cls-modal-box input,
+.cls-modal-box select {
+  width: 100%;
+  padding: 9px 10px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: #2d2d2d;
+}
+.cls-modal-box input:focus,
+.cls-modal-box select:focus {
+  outline: none;
+  border-color: #c4956a;
+}
+
+.cls-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.cls-modal-actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: #2d2d2d;
+}
+.cls-modal-actions .primary {
+  background: linear-gradient(135deg, #c4956a, #a07850);
+  color: #fff;
+  border: none;
+}
+.cls-modal-actions .danger {
+  background: #fff;
+  color: #e05252;
+  border-color: #f0c9c9;
+}
+
+
+/* ─── 班级详情页(点某个班进入)───────────────────── */
+.cls-detail-wrap {
+  padding: 14px 16px 100px;
+  background: #fff;
+  min-height: 100vh;
+}
+
+.cls-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.cls-back-btn {
+  background: #fff;
+  border: 1px solid #e0d6cc;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.cls-detail-info {
+  flex: 1;
+  min-width: 0;
+}
+.cls-detail-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #3a3226;
+  margin-bottom: 2px;
+}
+.cls-detail-teacher {
+  font-size: 12px;
+  color: #888;
+}
+.cls-detail-edit-btn {
+  background: #fff;
+  border: 1px solid #e0d6cc;
+  color: #666;
+  padding: 0 10px;
+  height: 32px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* 班级详情:学生区(批次 9 用,先占位)*/
+.cls-students-section {
+  background: #f5f0eb;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.cls-students-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cls-students-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3a3226;
+}
+.cls-coming-soon {
+  font-size: 13px;
+  color: #999;
+  text-align: center;
+  padding: 30px 10px;
+  line-height: 1.6;
+}
+
+/* 班级详情:删除按钮(放最底下,危险操作)*/
+.cls-detail-danger-zone {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f0ebe5;
+  text-align: center;
+}
+.cls-delete-class-btn {
+  background: #fff;
+  border: 1px solid #f0c9c9;
+  color: #e05252;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+}
