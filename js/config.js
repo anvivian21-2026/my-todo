@@ -15,19 +15,12 @@ const SB_URL = 'https://eleddpdxdcvxqexjsjop.supabase.co';
 const SB_KEY = 'sb_publishable_CmZyREuiHLG4j7pxD2-brw_Z2H62HUr';
 
 // ─── Supabase 数据 id 约定 ────────────────────────────────────
-// 同一张 tasks 表,用不同的 id 区分不同模块的数据
-//   'all'      = 旧版待办(为了向后兼容,首次启动会迁移)
-//   'todo'     = 新版待办
-//   'calendar' = 日历排课(第二阶段加)
-//   'courses'  = 课程库(第二阶段加)
 const SB_ID_TODO = 'todo';
 const SB_ID_TODO_LEGACY = 'all';
 const SB_ID_CALENDAR = 'calendar';
 const SB_ID_COURSES = 'courses';
 
 // ─── 中国法定节假日和调休数据 ────────────────────────────────
-// 注:每年 11 月左右国务院公布次年安排,届时手动补充新一年数据
-// 数据来源:国务院办公厅官方公告
 
 const HOLIDAYS_2025 = {
   '2025-01-01':'元旦',
@@ -59,12 +52,15 @@ const WORKDAYS_2026 = {
   '2026-05-09':'调休','2026-09-20':'调休','2026-10-10':'调休'
 };
 
-// 合并所有年份(以后加 2027 就这里加)
 const HOLIDAYS = Object.assign({}, HOLIDAYS_2025, HOLIDAYS_2026);
 const WORKDAYS = Object.assign({}, WORKDAYS_2025, WORKDAYS_2026);
 
 // ─── 老师配置 ────────────────────────────────────────────────
-// 加新老师就在这里加一个;颜色用十六进制
 const TEACHERS = {
   vivian:  { name: 'Vivian',  letter: 'V', color: '#6FA8DC', textColor: '#0C447C' },
-  miranda: { name: 'Miranda', letter: 'M', c
+  miranda: { name: 'Miranda', letter: 'M', color: '#FFCBA4', textColor: '#854F0B' }
+};
+
+// ─── 通用常量 ────────────────────────────────────────────────
+const STORAGE_KEY_TODO = 'weektodo-data';
+const DAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
