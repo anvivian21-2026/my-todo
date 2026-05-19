@@ -198,6 +198,10 @@ const ThemeApp = {
     root.style.setProperty('--theme-accent',        t.accent);
     root.style.setProperty('--theme-text',          t.text);
 
+    // 同步更新浏览器/PWA 标题栏颜色(用主色深)
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', t.primaryDark);
+
     // 更新换肤按钮上显示的主题名(如果按钮已经渲染了)
     const label = document.getElementById('theme-name');
     if (label) label.textContent = t.name;
