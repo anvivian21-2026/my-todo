@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#3a3226">
+<meta name="theme-color" content="#468432">
 <title>每日待办</title>
 
 <!-- PWA 配置 -->
@@ -16,10 +16,12 @@
 
 <!-- ============================================================
      样式文件
+     themes.css   = 主题变量声明 + 换肤按钮(必须最先加载)
      todo.css     = 待办视图样式
      calendar.css = 日历视图样式
      classes.css  = 班级视图样式
      ============================================================ -->
+<link rel="stylesheet" href="css/themes.css">
 <link rel="stylesheet" href="css/todo.css">
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/classes.css">
@@ -61,14 +63,16 @@
      1. config.js   - 全局常量
      2. utils.js    - 工具函数
      3. sync.js     - Supabase 同步
-     4. todo.js     - 待办模块
-     5. calendar.js - 日历模块
-     6. classes.js  - 班级模块
-     7. app.js      - 启动器(必须最后)
+     4. themes.js   - 主题模块(尽量早加载,布局期间就能上色)
+     5. todo.js     - 待办模块
+     6. calendar.js - 日历模块
+     7. classes.js  - 班级模块
+     8. app.js      - 启动器(必须最后)
      ============================================================ -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/sync.js"></script>
+<script src="js/themes.js"></script>
 <script src="js/todo.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/classes.js"></script>

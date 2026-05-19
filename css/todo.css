@@ -1,8 +1,10 @@
 /* ============================================================
    todo.css — 待办视图样式
    ============================================================
-   原本写在 index.html 的 <style> 块里,现在拆出来。
-   日历样式将来会单独放在 calendar.css。
+   2026-05-18 更新:接入主题系统
+   原本写死的颜色(深棕 header、米色背景等)全部改成 var(--theme-*)
+   主题色值在 js/themes.js 集中管理,改色只需动那一处。
+   布局、间距、字号完全没动。
    ============================================================ */
 
 * {
@@ -14,9 +16,10 @@
 
 body {
   font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-  background: #f5f0eb;
-  color: #2d2d2d;
+  background: var(--theme-background);
+  color: var(--theme-text);
   overflow-x: hidden;
+  transition: background 0.3s;
 }
 
 #app {
@@ -31,10 +34,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(135deg, #3a3226, #5c4a3a);
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-primary-light));
   padding: 20px 20px 14px;
   border-radius: 0 0 20px 20px;
   box-shadow: 0 4px 20px rgba(60, 45, 30, .15);
+  transition: background 0.3s;
 }
 .header-top {
   display: flex;
@@ -94,32 +98,33 @@ body {
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  background: #f5f0eb;
+  background: var(--theme-background);
+  transition: background 0.3s;
 }
 .input-bar input {
   flex: 1;
   padding: 11px 16px;
   border-radius: 12px;
   border: 2px solid #e0d6cc;
-  background: #fff;
-  color: #2d2d2d;
+  background: var(--theme-card);
+  color: var(--theme-text);
   font-size: 15px;
   outline: none;
 }
-.input-bar input:focus { border-color: #c4956a; }
+.input-bar input:focus { border-color: var(--theme-primary-light); }
 .input-bar input:disabled { opacity: .5; }
 .add-btn {
   width: 44px;
   height: 44px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #c4956a, #a07850);
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-accent));
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(180, 130, 90, .3);
-  transition: opacity .2s;
+  box-shadow: 0 2px 8px rgba(60, 45, 30, .25);
+  transition: opacity .2s, background 0.3s;
 }
 .add-btn svg { pointer-events: none; }
 
@@ -132,10 +137,11 @@ body {
 }
 .day-block {
   border-radius: 14px;
-  background: #fff;
+  background: var(--theme-card);
   box-shadow: 0 1px 4px rgba(60, 45, 30, .06);
   position: relative;
   z-index: 1;
+  transition: background 0.3s;
 }
 .day-block.expanded { z-index: 10; }
 
@@ -146,13 +152,16 @@ body {
   width: 100%;
   padding: 14px 16px;
   border: none;
-  background: #fff;
+  background: var(--theme-card);
   cursor: pointer;
   text-align: left;
   border-radius: 14px;
   transition: background .15s;
+  color: var(--theme-text);
 }
-.day-row.today { background: linear-gradient(135deg, #c4956a, #a07850); }
+.day-row.today {
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-primary-light));
+}
 .day-row.past { background: #fafaf8; }
 .day-row.expanded { border-radius: 14px 14px 0 0; border-bottom: 1px solid #f0ebe5; }
 
@@ -175,8 +184,8 @@ body {
 .day-right { display: flex; align-items: center; gap: 8px; }
 .task-count {
   font-size: 11px;
-  background: #f5f0eb;
-  color: #a07850;
+  background: var(--theme-background);
+  color: var(--theme-primary-dark);
   padding: 3px 10px;
   border-radius: 10px;
   font-weight: 600;
@@ -210,7 +219,7 @@ body {
   transition: background .15s, opacity .2s;
 }
 .task-row.done { opacity: .55; }
-.task-row.drag-over { background: #f5f0eb; }
+.task-row.drag-over { background: var(--theme-background); }
 
 .drag-handle {
   color: #d4ccc2;
@@ -235,7 +244,10 @@ body {
   transition: all .15s;
   padding: 0;
 }
-.checkbox.checked { background: #a07850; border-color: #a07850; }
+.checkbox.checked {
+  background: var(--theme-primary-dark);
+  border-color: var(--theme-primary-dark);
+}
 
 .task-content {
   flex: 1;
@@ -248,11 +260,12 @@ body {
   font-size: 14px;
   line-height: 1.4;
   word-break: break-word;
+  color: var(--theme-text);
 }
 .task-row.done .task-text { text-decoration: line-through; color: #aaa; }
 .carried-badge {
   font-size: 11px;
-  color: #c4956a;
+  color: var(--theme-accent);
   font-weight: 500;
 }
 
@@ -300,5 +313,5 @@ body {
   color: #2d2d2d;
   cursor: pointer;
 }
-.menu-item:active { background: #f5f0eb; }
+.menu-item:active { background: var(--theme-background); }
 .menu-item.danger { color: #e05252; }

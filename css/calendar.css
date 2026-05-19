@@ -1,12 +1,19 @@
 /* ============================================================
    calendar.css — 日历视图样式
+   ============================================================
+   2026-05-19 更新:接入主题系统
+   "结构性"颜色(背景、卡片、按钮、标签)改成 var(--theme-*)
+   "语义性"颜色(节假日红、调休橙、老师蓝/橙)保持不变——
+   这些颜色承载固定含义,不应该随主题变化。
+   班级条目样式(.cal-class-*)保留远端版本。
    ============================================================ */
 
 .tabs {
   display: flex;
   gap: 4px;
   padding: 12px 16px 0;
-  background: #f5f0eb;
+  background: var(--theme-background);
+  transition: background 0.3s;
 }
 .tab-btn {
   flex: 1;
@@ -23,14 +30,15 @@
   transition: all 0.15s;
 }
 .tab-btn.tab-active {
-  background: #fff;
-  color: #3a3226;
+  background: var(--theme-card);
+  color: var(--theme-text);
   box-shadow: 0 -1px 4px rgba(0,0,0,0.04);
 }
 
 .cal-wrap {
   padding: 14px 16px 100px;
-  background: #fff;
+  background: var(--theme-card);
+  transition: background 0.3s;
 }
 
 .cal-nav {
@@ -49,7 +57,7 @@
 .cal-nav button {
   background: #fff;
   border: 1px solid #e0d6cc;
-  color: #3a3226;
+  color: var(--theme-text);
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -70,7 +78,7 @@
   font-weight: 600;
   min-width: 110px;
   text-align: center;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 
 .cal-nav-right {
@@ -85,14 +93,14 @@
   border: 1px solid #e0d6cc !important;
 }
 .cal-add-btn {
-  background: linear-gradient(135deg, #c4956a, #a07850) !important;
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-primary-light)) !important;
   color: #fff !important;
   border: none !important;
   width: auto !important;
   padding: 0 14px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-  box-shadow: 0 2px 8px rgba(180, 130, 90, .3);
+  box-shadow: 0 2px 8px rgba(60, 45, 30, .25);
 }
 
 .cal-legend {
@@ -152,7 +160,7 @@
   transition: border-color 0.15s;
 }
 .cal-cell:hover {
-  border-color: #c4956a;
+  border-color: var(--theme-primary-light);
 }
 .cal-cell.empty {
   background: transparent;
@@ -161,7 +169,7 @@
   min-height: 0;
 }
 .cal-cell.today {
-  border: 2px solid #3a3226;
+  border: 2px solid var(--theme-primary-dark);
 }
 .cal-cell.holiday {
   background: #FCEBEB;
@@ -226,9 +234,10 @@
 .cal-detail {
   margin-top: 14px;
   padding: 12px;
-  background: #f5f0eb;
+  background: var(--theme-background);
   border-radius: 12px;
   box-shadow: 0 1px 4px rgba(60, 45, 30, .06);
+  transition: background 0.3s;
 }
 .cal-detail-head {
   display: flex;
@@ -241,7 +250,7 @@
 .cal-detail-title {
   font-size: 14px;
   font-weight: 600;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 .cal-detail-tag {
   font-size: 12px;
@@ -269,7 +278,7 @@
   transition: all 0.15s;
 }
 .cal-sort-btn.active {
-  background: #3a3226;
+  background: var(--theme-text);
   color: #fff;
 }
 
@@ -362,7 +371,7 @@
   margin: 0 0 14px;
   font-size: 16px;
   font-weight: 600;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 .cal-modal-box label {
   display: block;
@@ -389,7 +398,7 @@
 .cal-modal-box input:focus,
 .cal-modal-box select:focus {
   outline: none;
-  border-color: #c4956a;
+  border-color: var(--theme-primary-light);
 }
 .cal-modal-actions {
   display: flex;
@@ -408,7 +417,7 @@
   color: #2d2d2d;
 }
 .cal-modal-actions .primary {
-  background: linear-gradient(135deg, #c4956a, #a07850);
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-primary-light));
   color: #fff;
   border: none;
 }
