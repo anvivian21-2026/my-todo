@@ -39,7 +39,14 @@ const CalendarApp = {
   // ─── 数据加载 ─────────────────────────────────────────
   async loadData() {
     // 加载课程库(只读,由班级模块负责写入)
-    const courseData = await syncLoad(SB_ID_COURSES);
+    let courseData = await syncLoad(SB_ID_COURSES);
+    if (!courseData || !courseData.list || courseData.list.length === 0) {
+      // fallback: 旧 courses key 空了,直接从 classes key 读
+      const classesData = await syncLoad(SB_ID_CLASSES);
+      if (classesData && classesData.list) {
+        courseData = { list: classesData.list };
+      }
+    }
     if (courseData && courseData.list) {
       this.state.courses = courseData.list;
     }

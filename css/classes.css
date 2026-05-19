@@ -31,7 +31,7 @@
 .cls-title {
   font-size: 18px;
   font-weight: 700;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 .cls-subtitle {
   font-size: 12px;
@@ -53,11 +53,11 @@
   font-family: inherit;
 }
 .cls-unassigned-btn:hover {
-  border-color: #c4956a;
-  color: #3a3226;
+  border-color: var(--theme-primary-light);
+  color: var(--theme-text);
 }
 .cls-add-btn {
-  background: linear-gradient(135deg, #c4956a, #a07850);
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-primary-light));
   color: #fff;
   border: none;
   padding: 0 14px;
@@ -67,7 +67,7 @@
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(180, 130, 90, .3);
+  box-shadow: 0 2px 8px rgba(60, 45, 30, .25);
 }
 
 
@@ -88,8 +88,8 @@
   transition: all 0.15s;
 }
 .cls-card:hover {
-  border-color: #c4956a;
-  border-left-color: #c4956a;
+  border-color: var(--theme-primary-light);
+  border-left-color: var(--theme-primary-light);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
@@ -102,7 +102,7 @@
 .cls-card-name {
   font-size: 15px;
   font-weight: 600;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 .cls-card-teacher {
   font-size: 12px;
@@ -168,7 +168,7 @@
   margin: 0 0 14px;
   font-size: 16px;
   font-weight: 600;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 .cls-modal-box label {
   display: block;
@@ -195,7 +195,7 @@
 .cls-modal-box input:focus,
 .cls-modal-box select:focus {
   outline: none;
-  border-color: #c4956a;
+  border-color: var(--theme-primary-light);
 }
 
 .cls-modal-actions {
@@ -215,7 +215,7 @@
   color: #2d2d2d;
 }
 .cls-modal-actions .primary {
-  background: linear-gradient(135deg, #c4956a, #a07850);
+  background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-primary-light));
   color: #fff;
   border: none;
 }
@@ -261,7 +261,7 @@
 .cls-detail-name {
   font-size: 17px;
   font-weight: 700;
-  color: #3a3226;
+  color: var(--theme-text);
   margin-bottom: 2px;
 }
 .cls-detail-teacher {
@@ -282,7 +282,7 @@
 
 /* 班级详情:学生区(批次 9 用,先占位)*/
 .cls-students-section {
-  background: #f5f0eb;
+  background: var(--theme-background);
   border-radius: 10px;
   padding: 14px;
   margin-bottom: 14px;
@@ -296,7 +296,7 @@
 .cls-students-title {
   font-size: 14px;
   font-weight: 600;
-  color: #3a3226;
+  color: var(--theme-text);
 }
 .cls-coming-soon {
   font-size: 13px;

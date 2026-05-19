@@ -40,6 +40,15 @@ const ClassesApp = {
       // 已经有新版数据,直接用
       this.state.classes = classData.list;
       this.state._migrated = true;
+
+      // 启动时主动回写 courses,确保日历能读到最新班级
+      // (修复:之前路径 A 不写 courses,导致日历看不到班级)
+      const coursesFormat = this.state.classes.map(c => ({
+        id: c.id,
+        name: c.name,
+        teacher: c.teacher
+      }));
+      await syncSave(SB_ID_COURSES, { list: coursesFormat });
     } else {
       // 没有新版数据,尝试从旧 courses 迁移
       const oldCourses = await syncLoad(SB_ID_COURSES);
